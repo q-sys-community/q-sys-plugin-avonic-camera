@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- Initially generated manually using `nuget spec`-->
+<package >
+  <metadata>
+    <id>Avonic-Camera</id>
+    <version>0.0.0.0-master</version>
+    <title>Avonic Camera</title>
+    <authors>Solo Works London</authors>
+    <owners>Q-Sys Community</owners>
+    <license type="expression">GPL-3.0-or-later</license>
+    <projectUrl>https://github.com/q-sys-community/q-sys-plugin-avonic-camera</projectUrl>
+    <iconUrl>http://content/images/avonic_logo_200.jpg</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Package description</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>Avonic PTZ Camera</tags>
+    <summary>A control plugin for Avonic camera devices using the VISCA protocol</summary>
+  </metadata>
+  <files>
+    <file src="content\*" target="" />
+    <file src="content\images\*" target="" />
+  </files>
+</package>
