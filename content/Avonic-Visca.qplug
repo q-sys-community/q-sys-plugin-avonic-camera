@@ -18,7 +18,7 @@ local Colors = {
 }
 
 local MaxBoxes = 8
-
+preset_count = 127
 -- Static properties
 visca_address = 1
 
@@ -48,6 +48,13 @@ function GetProperties()
             Name = "Password",
             Type = "string",
             Value = "admin"
+		},
+		{
+			Name = "Preset Count",
+			Type = "integer",
+			Value = 6,
+			Min = 1,
+			Max = 128
 		},
 	}
 	return props
@@ -135,7 +142,7 @@ function GetControls(props)
 			ButtonType = "Momentary",
 			UserPin = true,
 			PinStyle = "Input",
-			Count = 127
+			Count = 128
 		},
 		{
 			Name = "CAM_Memory-Recall",
@@ -143,7 +150,7 @@ function GetControls(props)
 			ButtonType = "Momentary",
 			UserPin = true,
 			PinStyle = "Input",
-			Count = 127
+			Count = 128
 		}
 	}
 	return ctls
@@ -162,8 +169,9 @@ function GetControlLayout(props)
 	local ActiveRemote = props["page_index"].Value
 	local layout = {}
 	local graphics = {}
-
+	local btn_size = {32,24}
 	local x, y = 0, 0
+	preset_count = props["Preset Count"].Value
 	-- Status Info Section
 	layout["Online"] = {
 		PrettyName = "Online",
@@ -255,7 +263,7 @@ function GetControlLayout(props)
 		graphics,
 		{
 			Type = "Text",
-			Text = "Power:",
+			Text = "Presets:",
 			Font = "Roboto",
 			FontSize = 12,
 			FontStyle = "Bold",
@@ -315,6 +323,26 @@ function GetControlLayout(props)
 		Position = {x + 125, y + 45},
 		Size = {40, 25}
 	}
+	for i=1, preset_count do -- For each preset
+		layout["CAM_Memory-Set "..i] = {
+			PrettyName = "Preset Save~"..(i-1),
+			Style = "Button",
+			Color = Red,
+			--OffColor = Red,
+			Legend = "Save "..(i-1),
+			Position = {x+48+ btn_size[1]*i,116+btn_size[2]},
+			Size = btn_size
+		}
+		layout["CAM_Memory-Recall "..i] = {
+			PrettyName = "Preset Recall~"..(i-1),
+			Style = "Button",
+			Color = Green,
+			--OffColor = Green,
+			Legend = "Recall "..(i-1),
+			Position = {x+48+btn_size[1]*i,116+btn_size[2]*2},
+			Size = btn_size
+		}
+	end
 	return layout, graphics
 end
 
@@ -463,6 +491,14 @@ if Controls then
 					goZoom("") -- Stop
 				end
 			end
+		end
+	end
+	for i=1, preset_count do
+		Controls["CAM_Memory-Set"][i].EventHandler = function()
+			fnSend("\x01\x04\x3F\x01" .. string.format("%x", (i-1)))
+		end
+		Controls["CAM_Memory-Recall"][i].EventHandler = function()
+			fnSend("\x01\x04\x3F\x02" .. string.format("%x", (i-1)))
 		end
 	end
 	-- Startup
