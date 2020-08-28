@@ -5,7 +5,7 @@ PluginInfo = {
 	Name = "Avonic~Camera (0.0.0.0-master)", -- The tilde here indicates folder structure in the Shematic Elements pane
 	Version = "0.0.0.0-master",
 	Id = "qsysc.avonic.camera.visca.0.0.0.0-master", -- show this is just a unique id. Show some commented out 'fun' unique ids
-	Description = "Plugin for control of a Avonic Camera using the VISCA protocol",
+	Description = "Plugin for control of an Avonic Camera using the VISCA protocol",
 	ShowDebug = true
 }
 
