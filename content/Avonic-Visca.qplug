@@ -11,16 +11,25 @@ PluginInfo = {
 
 -- Once you've drawn your plugin in Designer, you can determine what colors you use a lot. Save yourself some time by putting them in a table, and then simply calling them later.
 local Colors = {
+	avonic_blue = {61,124,201},
 	White = {255, 255, 255},
 	Black = {0, 0, 0},
 	Red = {255, 0, 0},
 	Green = {0, 255, 0}
 }
 
-local MaxBoxes = 8
 preset_count = 127
+
+pt_speed = "\x06" -- 20, \x14
+--zoom_speed = "\x08" -- 15, 0-F
+
 -- Static properties
 visca_address = 1
+
+
+function GetColor(props)
+    return Colors.avonic_blue_blue
+end
 
 -- We can let users determine some of the plugin properties by exposing them here
 -- While this function can be very useful, it is completely optional and not always needed.
@@ -40,22 +49,12 @@ function GetProperties()
 			Max = 65535
 		},
 		{
-            Name = "Username",
-            Type = "string",
-            Value = "admin"
-		},
-		{
-            Name = "Password",
-            Type = "string",
-            Value = "admin"
-		},
-		{
 			Name = "Preset Count",
 			Type = "integer",
 			Value = 6,
 			Min = 1,
 			Max = 128
-		},
+		}
 	}
 	return props
 end
@@ -94,6 +93,24 @@ function GetControls(props)
 			UserPin = true
 		},
 		-- Control Pins
+		{
+			Name = "CAM_Pan-Speed",
+			ControlType = "Knob",
+			ControlUnit = "Integer",
+			Min = 1,
+			Max = 20,
+			UserPin = true,
+			PinStyle = "Both"
+		},
+		--[[{
+			Name = "CAM_Zoom-Speed",
+			ControlType = "Knob",
+			ControlUnit = "Integer",
+			Min = 1,
+			Max = 20,
+			UserPin = true,
+			PinStyle = "Both"
+		},]]
 		{
 			Name = "PanTiltDrive-Up",
 			ControlType = "Button",
@@ -169,7 +186,8 @@ function GetControlLayout(props)
 	local ActiveRemote = props["page_index"].Value
 	local layout = {}
 	local graphics = {}
-	local btn_size = {32,24}
+	local btn_size = {48, 24}
+	local txt_size = {2*btn_size[1],btn_size[2]}
 	local x, y = 0, 0
 	preset_count = props["Preset Count"].Value
 	-- Status Info Section
@@ -179,8 +197,8 @@ function GetControlLayout(props)
 		Color = {0, 255, 0},
 		OffColor = {200, 0, 0},
 		UnlinkOffColor = true,
-		Position = {x + 3, y + 25},
-		Size = {x + 25, y + 25}
+		Position = {x + 8, y + btn_size[2]},
+		Size = {x + btn_size[2],btn_size[2]}
 	}
 	layout["ConnectionState"] = {
 		PrettyName = "Connection State",
@@ -188,16 +206,16 @@ function GetControlLayout(props)
 		HTextAlign = "Left",
 		Padding = 5,
 		StrokeWidth = 0,
-		Position = {x + 35, y + 25},
-		Size = {200, 25}
+		Position = btn_size,
+		Size = {x + 4*btn_size[1], y + btn_size[2]}
 	}
 	layout["FirmwareVersion"] = {
 		PrettyName = "Firmware",
 		Style = "Text",
 		HTextAlign = "Left",
 		StrokeWidth = 0,
-		Position = {x + 235, y + 25},
-		Size = {100, 25}
+		Position = {x + 5*btn_size[1], y + btn_size[2]},
+		Size = {2*btn_size[1], btn_size[2]}
 	}
 	table.insert(
 		graphics,
@@ -210,41 +228,72 @@ function GetControlLayout(props)
 			StrokeColor = Colors.Black,
 			StrokeWidth = 1,
 			Position = {x, y},
-			Size = {415, 60} -- The width of the main GroupBox is dependent on how many channels the user specified. More channels means a wider group box
+			Size = {8*btn_size[1], 3*btn_size[2]} -- The width of the main GroupBox is dependent on how many channels the user specified. More channels means a wider group box
 		}
 	)
-
-	-- Controls section
-	y = y + 70
+	-- PTZ section
+	y = y + (3*btn_size[2]) + 16
 
 	table.insert(
 		graphics,
 		{
 			Type = "GroupBox", -- This is the overall groupbox that will give the plugin a more 'contained' look
-			Text = "Controls",
+			Text = "PTZ",
 			HTextAlign = "Left",
 			Fill = Colors.White,
 			CornerRadius = 8,
 			StrokeColor = Colors.Black,
 			StrokeWidth = 1,
 			Position = {x, y},
-			Size = {415, 200} -- The width of the main GroupBox is dependent on how many channels the user specified. More channels means a wider group box
+			Size = {8*btn_size[1], 5*btn_size[2]}
 		}
 	)
 	table.insert(
 		graphics,
 		{
 			Type = "Text",
-			Text = "Motor:",
+			Text = "Pan/Tilt:",
 			Font = "Roboto",
 			FontSize = 12,
 			FontStyle = "Bold",
 			HTextAlign = "Right",
 			Color = Colors.Black,
-			Position = {x + 00, y + 20},
-			Size = {75, 25}
+			Position = {x, y + btn_size[2]},
+			Size = txt_size
 		}
 	)
+	layout["PanTiltDrive-Up"] = {
+		PrettyName = "PTZ~Tilt Up",
+		Legend = "Up",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {x + txt_size[1]+0*btn_size[1], y + btn_size[2]},
+		Size = btn_size
+	}
+	layout["PanTiltDrive-Dn"] = {
+		PrettyName = "PTZ~Tilt Down",
+		Legend = "Down",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {x + txt_size[1]+1*btn_size[1], y + btn_size[2]},
+		Size = btn_size
+	}
+	layout["PanTiltDrive-Lt"] = {
+		PrettyName = "PTZ~Pan Left",
+		Legend = "Left",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {x + txt_size[1]+2*btn_size[1], y + btn_size[2]},
+		Size = btn_size
+	}
+	layout["PanTiltDrive-Rt"] = {
+		PrettyName = "PTZ~Pan Right",
+		Legend = "Right",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {x + txt_size[1]+3*btn_size[1], y + btn_size[2]},
+		Size = btn_size
+	}
 	table.insert(
 		graphics,
 		{
@@ -255,91 +304,81 @@ function GetControlLayout(props)
 			FontStyle = "Bold",
 			HTextAlign = "Right",
 			Color = Colors.Black,
-			Position = {x + 00, y + 45},
-			Size = {75, 25}
+			Position = {x, y + 2*btn_size[2]},
+			Size = txt_size
 		}
 	)
+	layout["CAM_Zoom-Z+"] = {
+		PrettyName = "PTZ~Zoom In",
+		Legend = "In",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {x + txt_size[1]+0*btn_size[1], y + 2*btn_size[2]},
+		Size = btn_size
+	}
+	layout["CAM_Zoom-Z-"] = {
+		PrettyName = "PTZ~Zoom Out",
+		Legend = "Out",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {x + txt_size[1]+1*btn_size[1], y + 2*btn_size[2]},
+		Size = btn_size
+	}
 	table.insert(
 		graphics,
 		{
 			Type = "Text",
-			Text = "Presets:",
+			Text = "Pan/Tilt Speed:",
 			Font = "Roboto",
 			FontSize = 12,
 			FontStyle = "Bold",
 			HTextAlign = "Right",
 			Color = Colors.Black,
-			Position = {x + 00, y + 70},
-			Size = {75, 25}
+			Position = {x, y + 3*btn_size[2]},
+			Size = txt_size
 		}
 	)
-
-	-- Remote Control Buttons
-	layout["PanTiltDrive-Up"] = {
-		PrettyName = "Control~Tilt Up",
-		Legend = "Up",
-		Style = "Button",
-		ButtonStyle = "Momentary",
-		Position = {x + 80, y + 20},
-		Size = {40, 25}
+	layout["CAM_Pan-Speed"] = {
+		PrettyName = "PTZ~Pan/Tilt Speed",
+		Style = "Text Field",
+		Margin = 2,
+		Position = {x + txt_size[1]+0*btn_size[1], y + 3*btn_size[2]},
+		Size = {2*btn_size[1], btn_size[2]}
 	}
-	layout["PanTiltDrive-Dn"] = {
-		PrettyName = "Control~Tilt Down",
-		Legend = "Down",
-		Style = "Button",
-		ButtonStyle = "Momentary",
-		Position = {x + 125, y + 20},
-		Size = {40, 25}
-	}
-	layout["PanTiltDrive-Lt"] = {
-		PrettyName = "Control~Pan Left",
-		Legend = "Left",
-		Style = "Button",
-		ButtonStyle = "Momentary",
-		Position = {x + 170, y + 20},
-		Size = {40, 25}
-	}
-	layout["PanTiltDrive-Rt"] = {
-		PrettyName = "Control~Pan Right",
-		Legend = "Right",
-		Style = "Button",
-		ButtonStyle = "Momentary",
-		Position = {x + 215, y + 20},
-		Size = {40, 25}
-	}
-	layout["CAM_Zoom-Z+"] = {
-		PrettyName = "Control~Zoom In",
-		Legend = "In",
-		Style = "Button",
-		ButtonStyle = "Momentary",
-		Position = {x + 80, y + 45},
-		Size = {40, 25}
-	}
-	layout["CAM_Zoom-Z-"] = {
-		PrettyName = "Control~Zoom Out",
-		Legend = "Out",
-		Style = "Button",
-		ButtonStyle = "Momentary",
-		Position = {x + 125, y + 45},
-		Size = {40, 25}
-	}
-	for i=1, preset_count do -- For each preset
-		layout["CAM_Memory-Set "..i] = {
-			PrettyName = "Preset Save~"..(i-1),
+	-- Presets Section
+	y = y + (5*btn_size[2]) + 16
+	local row_size = 8
+	table.insert(
+		graphics,
+		{
+			Type = "GroupBox", -- This is the overall groupbox that will give the plugin a more 'contained' look
+			Text = "Presets",
+			HTextAlign = "Left",
+			Fill = Colors.White,
+			CornerRadius = 8,
+			StrokeColor = Colors.Black,
+			StrokeWidth = 1,
+			Position = {x, y},
+			Size = {row_size*btn_size[1], btn_size[2]+(2*btn_size[2])*(math.floor((props["Preset Count"].Value-1)/row_size)+1)}
+		}
+	)
+	for i = 1, preset_count do -- For each preset
+  		local row = math.floor((i-1)/row_size )+1
+  		local column = i-(row-1)*row_size
+		layout["CAM_Memory-Recall " .. i] = {
+			PrettyName = "Preset Recall~" .. (i - 1),
 			Style = "Button",
-			Color = Red,
-			--OffColor = Red,
-			Legend = "Save "..(i-1),
-			Position = {x+48+ btn_size[1]*i,116+btn_size[2]},
+			Color = Colors.Green,
+			Legend = "Recall " .. (i - 1),
+			Position = {x + btn_size[1]*(column-1), y + (2*btn_size[2]*row)-btn_size[2]},
 			Size = btn_size
 		}
-		layout["CAM_Memory-Recall "..i] = {
-			PrettyName = "Preset Recall~"..(i-1),
+		layout["CAM_Memory-Set " .. i] = {
+			PrettyName = "Preset Save~" .. (i - 1),
 			Style = "Button",
-			Color = Green,
-			--OffColor = Green,
-			Legend = "Recall "..(i-1),
-			Position = {x+48+btn_size[1]*i,116+btn_size[2]*2},
+			Color = Colors.Red,
+			Legend = "Save " .. (i - 1),
+			Position = {x + btn_size[1]*(column-1), y + (2*btn_size[2]*row)},
 			Size = btn_size
 		}
 	end
@@ -451,7 +490,7 @@ if Controls then
 		if dir == "" then
 			fnSend("\x01\x06\x01\x06\x06\x03\x03") -- Stop
 		else
-			fnSend("\x01\x06\x01\x06\x06" .. dir) -- Move
+			fnSend("\x01\x06\x01" .. pt_speed .. pt_speed .. dir) -- Move
 		end
 	end
 
@@ -493,13 +532,17 @@ if Controls then
 			end
 		end
 	end
-	for i=1, preset_count do
+	for i = 1, preset_count do
 		Controls["CAM_Memory-Set"][i].EventHandler = function()
-			fnSend("\x01\x04\x3F\x01" .. string.format("%x", (i-1)))
+			fnSend("\x01\x04\x3F\x01" .. string.format("%x", (i - 1)))
 		end
 		Controls["CAM_Memory-Recall"][i].EventHandler = function()
-			fnSend("\x01\x04\x3F\x02" .. string.format("%x", (i-1)))
+			fnSend("\x01\x04\x3F\x02" .. string.format("%x", (i - 1)))
 		end
+	end
+	Controls["CAM_Pan-Speed"].EventHandler = function()
+		pt_speed = string.format("%x", Controls["CAM_Pan-Speed"].Value)
+		print(pt_speed)
 	end
 	-- Startup
 	fnConnect()
