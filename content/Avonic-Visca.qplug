@@ -28,7 +28,7 @@ visca_address = 1
 
 
 function GetColor(props)
-    return Colors.avonic_blue_blue
+    return Colors.avonic_blue
 end
 
 -- We can let users determine some of the plugin properties by exposing them here
