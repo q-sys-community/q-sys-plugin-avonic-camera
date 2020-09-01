@@ -20,8 +20,8 @@ local Colors = {
 
 preset_count = 127
 
-pt_speed = "\x06" -- 20, \x14
---zoom_speed = "\x08" -- 15, 0-F
+pt_speed = "\x08" -- maximum \x14 (20)
+--zoom_speed = "\x08" -- maximum \x0F (15)
 
 -- Static properties
 visca_address = 1
@@ -93,7 +93,7 @@ function GetControls(props)
 			UserPin = true
 		},
 		-- Control Pins
-		{
+		--[[{
 			Name = "CAM_Pan-Speed",
 			ControlType = "Knob",
 			ControlUnit = "Integer",
@@ -101,7 +101,7 @@ function GetControls(props)
 			Max = 20,
 			UserPin = true,
 			PinStyle = "Both"
-		},
+		},]]
 		--[[{
 			Name = "CAM_Zoom-Speed",
 			ControlType = "Knob",
@@ -324,7 +324,7 @@ function GetControlLayout(props)
 		Position = {x + txt_size[1]+1*btn_size[1], y + 2*btn_size[2]},
 		Size = btn_size
 	}
-	table.insert(
+	--[[table.insert(
 		graphics,
 		{
 			Type = "Text",
@@ -344,7 +344,7 @@ function GetControlLayout(props)
 		Margin = 2,
 		Position = {x + txt_size[1]+0*btn_size[1], y + 3*btn_size[2]},
 		Size = {2*btn_size[1], btn_size[2]}
-	}
+	}]]
 	-- Presets Section
 	y = y + (5*btn_size[2]) + 16
 	local row_size = 8
@@ -541,7 +541,7 @@ if Controls then
 		end
 	end
 	Controls["CAM_Pan-Speed"].EventHandler = function()
-		pt_speed = string.format("%x", Controls["CAM_Pan-Speed"].Value)
+		pt_speed = string.format("%X", Controls["CAM_Pan-Speed"].Value)
 		print(pt_speed)
 	end
 	-- Startup
