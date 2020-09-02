@@ -540,10 +540,10 @@ if Controls then
 			fnSend("\x01\x04\x3F\x02" .. string.format("%x", (i - 1)))
 		end
 	end
-	Controls["CAM_Pan-Speed"].EventHandler = function()
+	--[[Controls["CAM_Pan-Speed"].EventHandler = function()
 		pt_speed = string.format("%X", Controls["CAM_Pan-Speed"].Value)
 		print(pt_speed)
-	end
+	end]]
 	-- Startup
 	fnConnect()
 end
