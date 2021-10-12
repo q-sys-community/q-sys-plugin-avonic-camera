@@ -574,9 +574,9 @@ if Controls then
 	end
 	for i = 1, preset_count do
 		Controls["CAM_Memory-Set"][i].EventHandler = function()
-			if Controls["CAM_Memory-Set"][i].Boolean then
+			--if Controls["CAM_Memory-Set"][i].Boolean then -- Commenting this out allows triggers to save presets
 				fnSend("\x01\x04\x3F\x01" .. string.format("%x", (i - 1)))
-			end
+			--end
 		end
 		Controls["CAM_Memory-Recall"][i].EventHandler = function()
 			if Controls["CAM_Memory-Recall"][i].Boolean then
