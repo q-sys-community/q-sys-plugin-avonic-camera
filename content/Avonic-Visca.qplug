@@ -20,7 +20,7 @@ local Colors = {
 
 preset_count = 127
 
-pt_speed = "\x08" -- maximum \x14 (20)
+pt_speed = "\x14" -- maximum \x14 (20)
 --zoom_speed = "\x08" -- maximum \x0F (15)
 
 -- Static properties
@@ -84,15 +84,15 @@ function GetControls(props)
 			PinStyle = "Output",
 			UserPin = true
 		},
-		{
+		--[[{
 			Name = "FirmwareVersion",
 			ControlType = "Indicator",
 			IndicatorType = "Text",
 			PinStyle = "Output",
 			UserPin = true
-		},
+		},]]
 		-- Control Pins
-		--[[{
+		{
 			Name = "CAM_Pan-Speed",
 			ControlType = "Knob",
 			ControlUnit = "Integer",
@@ -100,7 +100,7 @@ function GetControls(props)
 			Max = 20,
 			UserPin = true,
 			PinStyle = "Both"
-		},]]
+		},
 		--[[{
 			Name = "CAM_Zoom-Speed",
 			ControlType = "Knob",
@@ -245,7 +245,7 @@ function GetControlLayout(props)
 			Position = {0, title_size[2] + (1.5 * btn_size[2])},
 			Size = txt_size
 		},
-		{
+		--[[{
 			Type = "Text",
 			Text = "Firmware:",
 			Font = "Roboto",
@@ -255,7 +255,7 @@ function GetControlLayout(props)
 			Color = Colors.Black,
 			Position = {0, title_size[2] + (2.5 * btn_size[2])},
 			Size = txt_size
-		},
+		},]]
 		{
 			Type = "GroupBox", -- This is the overall groupbox that will give the plugin a more 'contained' look
 			Text = "PTZ",
@@ -290,7 +290,7 @@ function GetControlLayout(props)
 			Position = {ptz_groupbox_position[1], ptz_groupbox_position[2] + (2 * btn_size[2])},
 			Size = txt_size
 		},
-		--[[{
+		{
 			Type = "Text",
 			Text = "Pan/Tilt Speed:",
 			Font = "Roboto",
@@ -300,7 +300,7 @@ function GetControlLayout(props)
 			Color = Colors.Black,
 			Position = {ptz_groupbox_position[1], ptz_groupbox_position[2] + (3 * btn_size[2])},
 			Size = txt_size
-		},]]
+		},
 		{
 			Type = "GroupBox", -- This is the overall groupbox that will give the plugin a more 'contained' look
 			Text = "Presets",
@@ -333,14 +333,14 @@ function GetControlLayout(props)
 		Position = {txt_size[1], title_size[2] + (1.5 * btn_size[2])},
 		Size = {2 * btn_size[1], btn_size[2]}
 	}
-	layout["FirmwareVersion"] = {
+	--[[layout["FirmwareVersion"] = {
 		PrettyName = "Firmware",
 		Style = "Text",
 		HTextAlign = "Left",
 		StrokeWidth = 0,
 		Position = {txt_size[1], title_size[2] + (2.5 * btn_size[2])},
 		Size = {2 * btn_size[1], btn_size[2]}
-	}
+	}]]
 	-- PTZ section
 	layout["PanTiltDrive-Up"] = {
 		PrettyName = "PTZ~Tilt Up",
@@ -390,14 +390,13 @@ function GetControlLayout(props)
 		Position = {ptz_groupbox_position[1] + txt_size[1] + (1 * btn_size[1]), ptz_groupbox_position[2] + (2 * btn_size[2])},
 		Size = btn_size
 	}
-	--[[
 	layout["CAM_Pan-Speed"] = {
 		PrettyName = "PTZ~Pan/Tilt Speed",
 		Style = "Text Field",
 		Margin = 2,
 		Position = {ptz_groupbox_position[1] + txt_size[1]+0*btn_size[1], ptz_groupbox_position[2] + (3 * btn_size[2])},
 		Size = {2*btn_size[1], btn_size[2]}
-	}]]
+	}
 	-- Presets Section
 
 	for i = 1, preset_count do -- For each preset
@@ -437,6 +436,9 @@ if Controls then
 
 	-- Comms Variable
 	Rx = ""
+
+	-- set fader t odefault
+	Controls["CAM_Pan-Speed"].Value = 20
 
 	-- Build TCP Client
 	conn = TcpSocket.New()
@@ -572,16 +574,20 @@ if Controls then
 	end
 	for i = 1, preset_count do
 		Controls["CAM_Memory-Set"][i].EventHandler = function()
-			fnSend("\x01\x04\x3F\x01" .. string.format("%x", (i - 1)))
+			if Controls["CAM_Memory-Set"][i].Boolean then
+				fnSend("\x01\x04\x3F\x01" .. string.format("%x", (i - 1)))
+			end
 		end
 		Controls["CAM_Memory-Recall"][i].EventHandler = function()
-			fnSend("\x01\x04\x3F\x02" .. string.format("%x", (i - 1)))
+			if Controls["CAM_Memory-Recall"][i].Boolean then
+				fnSend("\x01\x04\x3F\x02" .. string.format("%x", (i - 1)))
+			end
 		end
 	end
-	--[[Controls["CAM_Pan-Speed"].EventHandler = function()
-		pt_speed = string.format("%X", Controls["CAM_Pan-Speed"].Value)
-		print(pt_speed)
-	end]]
+	Controls["CAM_Pan-Speed"].EventHandler = function()
+			print("Pan Speed: " .. Controls["CAM_Pan-Speed"].String)
+			pt_speed = string.char(Controls["CAM_Pan-Speed"].String)
+	end
 	-- Startup
 	fnConnect()
 end
